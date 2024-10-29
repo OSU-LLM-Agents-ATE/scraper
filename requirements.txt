@@ -1,3 +1,5 @@
 requests
 beautifulsoup4
 urllib3
+mypy-boto3-dynamodb
+mypy-boto3-s3

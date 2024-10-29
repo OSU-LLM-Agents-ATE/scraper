@@ -1,2 +1,2 @@
 # scraper
-Scrapes OSU's websites 
+Scrapes OSU's websites

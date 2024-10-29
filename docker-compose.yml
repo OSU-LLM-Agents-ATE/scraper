@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"            # Main LocalStack service port
+    environment:
+      - SERVICES=dynamodb,s3   # List of services to enable
+      - DEBUG=1                # Enable debug mode for more detailed logging
+      - DEFAULT_REGION=us-east-1
+
