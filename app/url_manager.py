@@ -2,9 +2,9 @@ from typing import Set
 
 from botocore.exceptions import ClientError
 
-from clients import dynamodb_resource
-from config import DYNAMODB_TABLE_NAME
-from constants import Status
+from app.clients import dynamodb_resource
+from config.config import DYNAMODB_TABLE_NAME
+from app.constants import Status
 
 
 def add_urls(urls: Set[str]) -> None:

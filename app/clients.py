@@ -4,7 +4,7 @@ from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import S3ServiceResource
 
-from config import AWS_URL
+from config.config import AWS_URL
 
 test_kwargs = {
     "region_name": "us-east-1",
