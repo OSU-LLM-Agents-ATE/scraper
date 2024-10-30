@@ -1,10 +1,11 @@
+import time
 from typing import Set
 
 from botocore.exceptions import ClientError
 
 from app.clients import dynamodb_resource
-from config.config import DYNAMODB_TABLE_NAME
 from app.constants import Status
+from config.config import DYNAMODB_ITEM_TTL_SEC, DYNAMODB_TABLE_NAME, WORKER_COUNT
 
 
 def add_urls(urls: Set[str]) -> None:
@@ -13,9 +14,14 @@ def add_urls(urls: Set[str]) -> None:
 
     for url in urls:
         try:
-            # Attempt to add the URL if it doesn't already exist
+            # Attempt to add the URL if it doesn't already exist with TTL
+            expiration_timestamp = int(time.time()) + DYNAMODB_ITEM_TTL_SEC
             table.put_item(
-                Item={"ADDRESS": url, "StatusCode": Status.AVAILABLE.value},
+                Item={
+                    "ADDRESS": url,
+                    "StatusCode": Status.AVAILABLE.value,
+                    "ExpirationTime": expiration_timestamp,
+                },
                 ConditionExpression="attribute_not_exists(ADDRESS)",  # Only add if URL does not exist
             )
             print(f"URL added: {url}")
@@ -33,11 +39,14 @@ def get_next_url():
     """Retrieve an available URL from DynamoDB and mark it as 'in-progress' using a conditional update."""
     table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
 
-    # Scan for available URLs
-    response = table.scan(
-        FilterExpression="StatusCode = :status",
+    # Query for available URLs using the GSI
+    response = table.query(
+        IndexName="StatusCodeIndex",
+        KeyConditionExpression="StatusCode = :status",
         ExpressionAttributeValues={":status": Status.AVAILABLE.value},
-    )  # this will be inefficient with a large number of URLs, maybe it doesn't matter? here? Max results is enough to
+        Limit=WORKER_COUNT,
+    )
+
     items = response.get("Items", [])
 
     # If no available URLs, return None
