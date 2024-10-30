@@ -4,7 +4,8 @@ import threading
 import time
 
 from app.constants import Status
-from app.scraper import download_page, extract_urls, save_page_to_s3
+from app.s3_uploader import save_page_to_s3_batch
+from app.scraper import download_page, extract_urls
 from app.url_manager import add_urls, get_next_url, update_url_status
 
 MAX_RETRIES = 3
@@ -43,7 +44,7 @@ def worker(base_url) -> None:
             add_urls(urls=urls)
 
             # Save page content to S3
-            save_page_to_s3(file_name=url_to_filename(url), html_content=html)
+            save_page_to_s3_batch(file_name=url_to_filename(url), html_content=html)
 
             # Mark URL as done
             update_url_status(url, Status.DONE.value)

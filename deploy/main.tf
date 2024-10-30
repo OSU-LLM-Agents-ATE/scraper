@@ -18,29 +18,32 @@ resource "aws_s3_bucket" "scraper_bucket" {
 
 resource "aws_dynamodb_table" "scraper_table" {
   name           = "ScraperTable"
-  billing_mode   = "PAY_PER_REQUEST"  # Use on-demand billing
+  billing_mode   = "PAY_PER_REQUEST"
 
-  hash_key       = "URL"
+  hash_key       = "ADDRESS"
 
   attribute {
-    name = "URL"
-    type = "S"  # string
-  }
-
-  # speeds up filtered scan on status code
-  global_secondary_index {
-    name               = "StatusCodeIndex"
-    hash_key           = "StatusCode"
-    projection_type    = "ALL"
+    name = "ADDRESS"
+    type = "S"
   }
 
   attribute {
     name = "StatusCode"
-    type = "S"  # string
+    type = "S"
   }
 
-  # we should consider TTL to manage updating old files.
-  # We might be able to overwrite in the same folder in S3
+  # Configure a Global Secondary Index for querying by StatusCode
+  global_secondary_index {
+    name               = "StatusCodeIndex"
+    hash_key           = "StatusCode"
+    projection_type    = "ALL"           # Use ALL projection to include all attributes in the index
+  }
+
+  # Configure TTL settings
+  ttl {
+    attribute_name = "ExpirationTime"
+    enabled        = true
+  }
 
   tags = {
     Environment = "production"

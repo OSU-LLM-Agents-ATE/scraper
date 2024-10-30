@@ -1,7 +1,7 @@
 from app.clients import dynamodb_resource, s3_client, s3_resource
-from config.config import AWS_URL, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME, WORKER_COUNT
 from app.url_manager import add_urls
 from app.worker_pool import run_worker_pool
+from config.config import AWS_URL, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME, WORKER_COUNT
 
 
 def setup_resources():
