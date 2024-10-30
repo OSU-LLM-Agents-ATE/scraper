@@ -3,9 +3,9 @@ import re
 import threading
 import time
 
-from constants import Status
-from scraper import download_page, extract_urls, save_page_to_s3
-from url_manager import add_urls, get_next_url, update_url_status
+from app.constants import Status
+from app.scraper import download_page, extract_urls, save_page_to_s3
+from app.url_manager import add_urls, get_next_url, update_url_status
 
 MAX_RETRIES = 3
 

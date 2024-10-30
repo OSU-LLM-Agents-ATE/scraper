@@ -1,7 +1,7 @@
 import unittest
 from typing import Set
 
-from scraper import extract_urls
+from app.scraper import extract_urls
 
 
 class TestExtractUrls(unittest.TestCase):

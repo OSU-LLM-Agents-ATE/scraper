@@ -1,0 +1,50 @@
+name: Deploy Infrastructure with Terraform
+
+on:
+  push:
+    branches:
+      - main  # Only run on pushes to main branch
+  pull_request:
+    branches:
+      - main  # Also run on pull requests to main for testing
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest  # we can use something lighter here, alpine maybe
+
+    env:
+      AWS_DEFAULT_REGION: us-east-1  # Specify the AWS region to deploy to
+      TF_IN_AUTOMATION: true         # Tells Terraform this is an automated run
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      # Step 3: Install Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Initialize Terraform
+        run: terraform -chdir=deploy init
+
+      - name: Terraform Plan
+        run: terraform -chdir=deploy plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform -chdir=deploy apply -auto-approve tfplan
+
+#      - name: Terraform Destroy
+#        if: github.event_name == 'pull_request' && github.event.action == 'closed'
+#        run: terraform -chdir=deploy destroy -auto-approve

@@ -4,8 +4,8 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 
-from clients import s3_client
-from config import JOB_ID, S3_BUCKET_NAME
+from app.clients import s3_client
+from config.config import JOB_ID, S3_BUCKET_NAME
 
 
 def download_page(url: str) -> str:
