@@ -1,10 +1,10 @@
 import structlog
-import os
-from config.logging import configure_logging
+
 from app.clients import dynamodb_resource, s3_client, s3_resource
 from app.url_manager import add_urls
 from app.worker_pool import run_worker_pool
 from config.config import AWS_URL, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME, WORKER_COUNT
+from scraper.logging import configure_logging
 
 # Configure logging
 configure_logging()
@@ -28,7 +28,7 @@ def setup_resources():
         table.wait_until_exists()
         logger.info("DynamoDB table created.", table_name=DYNAMODB_TABLE_NAME)
     except dynamodb_resource.meta.client.exceptions.ResourceInUseException:
-        logger.info("DynamoDB table already exists.", table_name=DYNAMODB_TABLE_NAME)
+        logger.warning("DynamoDB table already exists.", table_name=DYNAMODB_TABLE_NAME)
     except Exception as e:
         logger.exception("Failed to create DynamoDB table.", error=str(e))
 
@@ -39,7 +39,7 @@ def setup_resources():
         s3_resource.create_bucket(Bucket=S3_BUCKET_NAME)
         logger.info("S3 bucket created.", bucket_name=S3_BUCKET_NAME)
     except s3_client.exceptions.BucketAlreadyExists:
-        logger.info("S3 bucket already exists.", bucket_name=S3_BUCKET_NAME)
+        logger.warning("S3 bucket already exists.", bucket_name=S3_BUCKET_NAME)
     except Exception as e:
         logger.exception("Failed to create S3 bucket.", error=str(e))
 

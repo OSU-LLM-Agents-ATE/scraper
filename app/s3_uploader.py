@@ -4,8 +4,12 @@ import time
 from queue import Queue
 from typing import Optional
 
+import structlog
 from app.clients import s3_client
 from config.config import JOB_ID, S3_BUCKET_NAME
+
+# Initialize structlog logger
+logger = structlog.get_logger()
 
 BATCH_SIZE = 20
 BATCH_TIMEOUT = 5
@@ -22,7 +26,7 @@ def save_page_to_s3_batch(file_name: str, html_content: str) -> None:
 
     # Add the item to the queue
     upload_queue.put((key, html_content))
-    print(f"Queued page for S3 upload with key: {key}")
+    logger.info("Queued page for S3 upload", key=key)
 
     # Check if it's time to flush the batch
     if upload_queue.qsize() >= BATCH_SIZE:
@@ -48,14 +52,14 @@ def flush_s3_batch(forced: Optional[bool] = False) -> None:
         # Wait for all uploads to complete
         concurrent.futures.wait(futures)
 
-    print(f"Uploaded batch of {len(items_to_upload)} items to S3")
+    logger.info("Uploaded batch to S3", items=len(items_to_upload))
 
 
 # Helper function for uploading a single item to S3
 def upload_to_s3(key: str, html_content: str) -> None:
     """Upload a single file to S3."""
     s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=key, Body=html_content)
-    print(f"Saved page to S3 with key: {key}")
+    logger.info("Saved page to S3", key=key)
 
 
 # Background func to flush the batch periodically

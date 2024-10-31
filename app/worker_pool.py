@@ -3,10 +3,14 @@ import re
 import threading
 import time
 
+import structlog
 from app.constants import Status
 from app.s3_uploader import save_page_to_s3_batch
 from app.scraper import download_page, extract_urls
 from app.url_manager import add_urls, get_next_url, update_url_status
+
+# Initialize structlog logger
+logger = structlog.get_logger()
 
 MAX_RETRIES = 3
 
@@ -29,11 +33,11 @@ def worker(base_url) -> None:
         if not url:
             if retry_count < MAX_RETRIES:
                 delay = min(30, (2**retry_count) + random.uniform(0, 1))
-                print(f"No available URLs. Retrying in {delay:.2f} seconds...")
+                logger.warning("No available URLs. Retrying...", delay=delay, retry_count=retry_count)
                 retry_count += 1
                 time.sleep(delay)
                 continue
-            print("No available URLs after maximum retries. Worker exiting.")
+            logger.warning("No available URLs after maximum retries. Worker exiting.")
             break
         retry_count = 0  # Reset retry count if a URL is found
         try:
@@ -48,8 +52,9 @@ def worker(base_url) -> None:
 
             # Mark URL as done
             update_url_status(url, Status.DONE.value)
+            logger.info("Processed URL successfully", url=url)
         except Exception as e:
-            print(f"Error processing {url}: {e}")
+            logger.error("Error processing URL", url=url, error=str(e))
             update_url_status(url, Status.FAILED.value)
         time.sleep(1)
 
@@ -61,6 +66,8 @@ def run_worker_pool(base_url: str, num_workers: int = 3) -> None:
         thread = threading.Thread(target=worker, args=(base_url,))
         threads.append(thread)
         thread.start()
+        logger.info("Worker thread started", thread=thread.name)
 
     for thread in threads:
         thread.join()
+        logger.info("Worker thread finished", thread=thread.name)

@@ -1,6 +1,10 @@
-import os
 import uuid
 from datetime import datetime
+import os
+
+# Fetch log level and log file path from environment variables, set defaults
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()  # Default to INFO
+
 
 AWS_URL = os.getenv("AWS_URL", "")
 DYNAMODB_TABLE_NAME = os.getenv("DYNAMODB_TABLE_NAME", "ScraperTable")
