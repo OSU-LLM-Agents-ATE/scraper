@@ -1,14 +1,12 @@
 import time
 from typing import Set
-
 from botocore.exceptions import ClientError
-
 from app.clients import dynamodb_resource
 from app.constants import Status
 from config.config import DYNAMODB_ITEM_TTL_SEC, DYNAMODB_TABLE_NAME, WORKER_COUNT
 
 
-def add_urls(urls: Set[str]) -> None:
+def add_urls(urls: Set[str], logger) -> None:
     """Add URLs to the DynamoDB table with 'available' status if they don't already exist."""
     table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
 
@@ -24,18 +22,17 @@ def add_urls(urls: Set[str]) -> None:
                 },
                 ConditionExpression="attribute_not_exists(ADDRESS)",  # Only add if URL does not exist
             )
-            print(f"URL added: {url}")
+            logger.info("URL added", url=url)
         except ClientError as e:
             # If the item already exists, a ConditionalCheckFailedException will be raised
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                pass  # TODO: use structlogging and log this as Debug
-                # print(f"Duplicate URL skipped: {url}")
+                logger.debug("Duplicate URL skipped", url=url)
             else:
                 # Handle unexpected errors
-                print(f"Error adding URL {url}: {e}")
+                logger.error("Error adding URL", url=url, error=str(e))
 
 
-def get_next_url():
+def get_next_url(logger):
     """Retrieve an available URL from DynamoDB and mark it as 'in-progress' using a conditional update."""
     table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
 
@@ -68,22 +65,24 @@ def get_next_url():
                 },
             )
             # Successfully claimed the URL, return it
+            logger.info("URL claimed", url=url)
             return url
 
         except ClientError as e:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 # Another worker claimed this URL; continue to the next item
+                logger.debug("URL already claimed by another worker", url=url)
                 continue
             else:
                 # Other unexpected errors
-                print(f"Unexpected error: {e}")
+                logger.error("Unexpected error", error=str(e))
                 return None
 
     # If all items were claimed by other workers, return None
     return None
 
 
-def update_url_status(url: str, status: Status):
+def update_url_status(url: str, status: Status, logger):
     """Update the status of a URL in the DynamoDB table."""
     table = dynamodb_resource.Table(DYNAMODB_TABLE_NAME)
     table.update_item(
@@ -91,3 +90,4 @@ def update_url_status(url: str, status: Status):
         UpdateExpression="SET StatusCode = :status",
         ExpressionAttributeValues={":status": status},
     )
+    logger.info("URL status updated", url=url, status=status)

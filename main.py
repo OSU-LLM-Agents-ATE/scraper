@@ -4,25 +4,18 @@ from app.clients import dynamodb_resource, s3_client, s3_resource
 from app.url_manager import add_urls
 from app.worker_pool import run_worker_pool
 from config.config import AWS_URL, DYNAMODB_TABLE_NAME, S3_BUCKET_NAME, WORKER_COUNT
-from scraper.logging import configure_logging
 
-# Configure logging
-configure_logging()
-
-# Initialize logger
+# Initialize the logger
 logger = structlog.get_logger()
 
 
-def setup_resources():
+def setup_resources(logger):
     """Create DynamoDB table and S3 bucket if they do not exist."""
-    # Create DynamoDB Table
     try:
         table = dynamodb_resource.create_table(
             TableName=DYNAMODB_TABLE_NAME,
             KeySchema=[{"AttributeName": "ADDRESS", "KeyType": "HASH"}],
-            AttributeDefinitions=[
-                {"AttributeName": "ADDRESS", "AttributeType": "S"},
-            ],
+            AttributeDefinitions=[{"AttributeName": "ADDRESS", "AttributeType": "S"}],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
         )
         table.wait_until_exists()
@@ -34,7 +27,6 @@ def setup_resources():
 
     logger.info("DynamoDB table is ready.")
 
-    # Create S3 Bucket
     try:
         s3_resource.create_bucket(Bucket=S3_BUCKET_NAME)
         logger.info("S3 bucket created.", bucket_name=S3_BUCKET_NAME)
@@ -49,15 +41,12 @@ def setup_resources():
 
 if __name__ == "__main__":
     if AWS_URL != "":
-        setup_resources()  # Setup DynamoDB table and S3 bucket in LocalStack
+        setup_resources(logger)
 
     base_url = "https://engineering.oregonstate.edu"
-    # we can use subdomains.txt to get more initial URLs if we decide to expand our scraping surface area
 
-    # Add initial URLs to the queue
-    add_urls(urls={base_url})
+    add_urls(urls={base_url}, logger=logger)
     logger.info("Initial URLs added to queue.", base_url=base_url)
 
-    # Start the worker pool
-    run_worker_pool(base_url=base_url, num_workers=WORKER_COUNT)
+    run_worker_pool(base_url=base_url, num_workers=WORKER_COUNT, logger=logger)
     logger.info("Worker pool started.", base_url=base_url, num_workers=WORKER_COUNT)

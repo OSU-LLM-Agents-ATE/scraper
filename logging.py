@@ -1,3 +1,10 @@
+import structlog
+import logging
+import sys
+
+from config import LOG_LEVEL
+
+
 def configure_logging():
     # Configure standard logging to stdout
     logging.basicConfig(
@@ -14,3 +21,7 @@ def configure_logging():
         ],
         logger_factory=structlog.stdlib.LoggerFactory(),
     )
+
+
+# Initialize logging once when this module is imported
+configure_logging()
