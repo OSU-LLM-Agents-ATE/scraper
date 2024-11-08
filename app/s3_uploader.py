@@ -15,22 +15,22 @@ upload_queue = Queue()
 upload_lock = threading.Lock()
 
 
-def save_page_to_s3_batch(file_name: str, html_content: str) -> None:
+def save_page_to_s3_batch(file_name: str, html_content: str, logger) -> None:
     """Add an item to the batch queue for uploading to S3."""
     # Construct the S3 object key
     key = f"{JOB_ID}/{file_name}"
 
     # Add the item to the queue
     upload_queue.put((key, html_content))
-    print(f"Queued page for S3 upload with key: {key}")
+    logger.info("Queued page for S3 upload", key=key)
 
     # Check if it's time to flush the batch
     if upload_queue.qsize() >= BATCH_SIZE:
         with upload_lock:
-            flush_s3_batch()
+            flush_s3_batch(logger=logger)
 
 
-def flush_s3_batch(forced: Optional[bool] = False) -> None:
+def flush_s3_batch(logger, forced: Optional[bool] = False) -> None:
     """Upload all items in the batch queue to S3 concurrently."""
     items_to_upload = []
 
@@ -42,31 +42,32 @@ def flush_s3_batch(forced: Optional[bool] = False) -> None:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Schedule the upload tasks concurrently
         futures = [
-            executor.submit(upload_to_s3, key, html_content)
+            executor.submit(upload_to_s3, key, html_content, logger)
             for key, html_content in items_to_upload
         ]
         # Wait for all uploads to complete
         concurrent.futures.wait(futures)
 
-    print(f"Uploaded batch of {len(items_to_upload)} items to S3")
+    logger.info("Uploaded batch to S3", items=len(items_to_upload))
 
 
 # Helper function for uploading a single item to S3
-def upload_to_s3(key: str, html_content: str) -> None:
+def upload_to_s3(key: str, html_content: str, logger) -> None:
     """Upload a single file to S3."""
     s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=key, Body=html_content)
-    print(f"Saved page to S3 with key: {key}")
+    logger.info("Saved page to S3", key=key)
 
 
 # Background func to flush the batch periodically
-def background_batch_uploader():
+def background_batch_uploader(logger) -> None:
     while True:
         time.sleep(BATCH_TIMEOUT)
         with upload_lock:
             if not upload_queue.empty():
-                flush_s3_batch(forced=True)
+                flush_s3_batch(forced=True, logger=logger)
 
 
 # Start the background thread to periodically flush the queue
-background_thread = threading.Thread(target=background_batch_uploader, daemon=True)
-background_thread.start()
+def start_background_uploader(logger) -> None:
+    background_thread = threading.Thread(target=background_batch_uploader, args=(logger,), daemon=True)
+    background_thread.start()

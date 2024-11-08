@@ -1,6 +1,9 @@
-import os
 import uuid
 from datetime import datetime
+import os
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
 
 
 ###############
