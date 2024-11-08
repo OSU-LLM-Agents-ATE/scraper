@@ -2,8 +2,7 @@ import uuid
 from datetime import datetime
 import os
 
-# Fetch log level and log file path from environment variables, set defaults
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()  # Default to INFO
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 
 AWS_URL = os.getenv("AWS_URL", "")

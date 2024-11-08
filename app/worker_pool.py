@@ -60,10 +60,8 @@ def run_worker_pool(base_url: str, num_workers: int = 3) -> None:
     """Run a pool of worker threads to process URLs concurrently."""
     threads = []
     for i in range(num_workers):
-        # Initialize a new logger for each worker
         logger = structlog.get_logger().bind(worker_id=i)
 
-        # Pass the logger to the worker thread
         thread = threading.Thread(target=worker, args=(base_url, logger))
         threads.append(thread)
         thread.start()

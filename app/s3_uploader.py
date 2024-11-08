@@ -30,7 +30,7 @@ def save_page_to_s3_batch(file_name: str, html_content: str, logger) -> None:
             flush_s3_batch(logger=logger)
 
 
-def flush_s3_batch(forced: Optional[bool] = False, logger=None) -> None:
+def flush_s3_batch(logger, forced: Optional[bool] = False) -> None:
     """Upload all items in the batch queue to S3 concurrently."""
     items_to_upload = []
 

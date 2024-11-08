@@ -44,6 +44,7 @@ if __name__ == "__main__":
         setup_resources(logger)
 
     base_url = "https://engineering.oregonstate.edu"
+    # we can use subdomains.txt to get more initial URLs if we decide to expand our scraping surface area
 
     add_urls(urls={base_url}, logger=logger)
     logger.info("Initial URLs added to queue.", base_url=base_url)
