@@ -2,13 +2,13 @@ import os
 import uuid
 from datetime import datetime
 
-
 ###############
 ### SERVICE  ##
 ###############
 
 WORKER_COUNT = int(os.getenv("WORKER_COUNT", 16))
-JOB_ID = f'{datetime.now().strftime("%Y-%m-%d")}/run-{uuid.uuid4()}'
+RUN_DATE = datetime.now().strftime("%Y-%m-%d")
+JOB_ID = f"{RUN_DATE}/run-{uuid.uuid4()}"
 
 ###############
 ##### AWS  ####
