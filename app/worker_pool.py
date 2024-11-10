@@ -44,7 +44,9 @@ def worker(base_url) -> None:
             add_urls(urls=urls)
 
             # Save page content to S3
-            save_page_to_s3_batch(file_name=url_to_filename(url), html_content=html)
+            save_page_to_s3_batch(
+                file_name=url_to_filename(url), html_content=html, url=url
+            )
 
             # Mark URL as done
             update_url_status(url, Status.DONE.value)
