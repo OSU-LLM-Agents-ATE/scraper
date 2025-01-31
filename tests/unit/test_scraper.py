@@ -50,7 +50,7 @@ class TestExtractUrls(unittest.TestCase):
         </html>
         """
         # Should be empty because no URLs match the base subdomain
-        expected_urls: Set[str] = set()  
+        expected_urls: Set[str] = set()
         result = extract_urls(html, self.base_url)
         self.assertEqual(result, expected_urls)
 
