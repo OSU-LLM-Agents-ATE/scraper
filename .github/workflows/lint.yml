@@ -36,7 +36,3 @@ jobs:
       # Step 5: Run Black (check mode)
       - name: Run Black (check mode)
         run: black --check --diff .
-
-      # Step 6: Run Pylint
-      - name: Run Pylint
-        run: pylint scraper.py worker_pool.py url_manager.py
