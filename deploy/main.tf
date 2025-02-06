@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "scraper-tf-state"
+        bucket         = "osu-scraper-tf-state"
     key            = "global/s3/terraform.tfstate"            # Path to store the state file in the bucket
     region         = "us-east-1"                              # S3 bucket region
     encrypt        = true                                     # Enable server-side encryption
@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "scraper_bucket" {
-  bucket = "osu-llm-ate-scraped-pages"
+  bucket = "osu-llm-ate-scraped-files"
 }
 
 resource "aws_dynamodb_table" "scraper_table" {
