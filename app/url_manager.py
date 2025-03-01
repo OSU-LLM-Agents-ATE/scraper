@@ -5,7 +5,8 @@ from botocore.exceptions import ClientError
 
 from app.clients import dynamodb_resource
 from app.constants import Status
-from config.config import DYNAMODB_ITEM_TTL_SEC, DYNAMODB_TABLE_NAME, WORKER_COUNT
+from config.config import (DYNAMODB_ITEM_TTL_SEC, DYNAMODB_TABLE_NAME,
+                           WORKER_COUNT)
 
 
 def add_urls(urls: Set[str]) -> None:

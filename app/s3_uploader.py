@@ -1,4 +1,5 @@
 import concurrent.futures
+import hashlib
 import threading
 import time
 from queue import Queue
@@ -15,8 +16,31 @@ upload_queue = Queue()
 upload_lock = threading.Lock()
 
 
+def sha256_from_string(text) -> str:
+    encoded_text = text.encode("utf-8")
+    hash_object = hashlib.sha256(encoded_text)
+    hex_digest = hash_object.hexdigest()
+    return hex_digest
+
+
+# todo: there is a bug here, if there are concurrent scrapers running, they will not have context to another scraper's already stored hashes
+# fix: place this functionality in dynamodb
+already_stored_hashes: dict[str, list[str]] = {}
+
+
 def save_page_to_s3_batch(file_name: str, html_content: str, url: str) -> None:
     """Add an item to the batch queue for uploading to S3."""
+    # check if the content is already stored
+    content_hash = sha256_from_string(html_content)
+    if content_hash in already_stored_hashes:
+        print(
+            f"Content of {url} has already seen under these url(s): {already_stored_hashes[content_hash]}"
+        )
+        already_stored_hashes[content_hash].append(url)
+        return
+    else:
+        already_stored_hashes[content_hash] = [url]
+
     # Construct the S3 object key
     key = f"{JOB_ID}/{file_name}"
 

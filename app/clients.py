@@ -4,7 +4,8 @@ from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import S3ServiceResource
 
-from config.config import AWS_ACCESS_KEY_ID, AWS_REGION, AWS_SECRET_ACCESS_KEY, AWS_URL
+from config.config import (AWS_ACCESS_KEY_ID, AWS_REGION,
+                           AWS_SECRET_ACCESS_KEY, AWS_URL)
 
 aws_resource_kwargs = {
     "region_name": AWS_REGION,
