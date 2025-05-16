@@ -49,9 +49,8 @@ class TestExtractUrls(unittest.TestCase):
             </body>
         </html>
         """
-        expected_urls: Set[str] = (
-            set()
-        )  # Should be empty because no URLs match the base subdomain
+        # Should be empty because no URLs match the base subdomain
+        expected_urls: Set[str] = set()
         result = extract_urls(html, self.base_url)
         self.assertEqual(result, expected_urls)
 
@@ -80,7 +79,9 @@ class TestExtractUrls(unittest.TestCase):
             <body>
                 <a href="">Empty Link</a>
                 <a href="#fragment">Fragment Only</a>
-                <a href="https://engineering.oregonstate.edu/#top">Internal Fragment</a>
+                <a href="https://engineering.oregonstate.edu/#top">
+                    Internal Fragment
+                </a>
                 <a href="/valid">Valid Relative Link</a>
             </body>
         </html>
