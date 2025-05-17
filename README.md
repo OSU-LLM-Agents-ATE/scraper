@@ -43,6 +43,14 @@ The current existing solutions in place are navigating the Oregon State websites
 - AWS
     - S3
     - DynamoDB
+ 
+---
+
+## Architectural Diagram
+
+![Architectural Diagram](architectural_diagram.png)
+
+---
 
 ### Repository Overview
 
